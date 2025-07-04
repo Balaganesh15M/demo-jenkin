@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        dockerimagename = "balaganesh15m/userapi:latest"
+        dockerimagename = "bala1511/userapi:latest"
     }
 
     stages {
