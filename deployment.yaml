@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: userapi
-        image: balaganesh15m/userapi:latest
+        image: bala1511/userapi:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
