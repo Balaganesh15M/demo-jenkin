@@ -2,15 +2,26 @@ pipeline {
     agent any
 
     environment {
-        dockerimagename = "bala1511/userapi:latest"
-        registryCredentials = 'dockerhub'        
-        githubCredentials = 'github-private'      
+        dockerimagename = "bala1511/userapi:latest"     
     }
 
     stages {
-        stage('Checkout Source') {
+        // stage('Checkout Source') {
+        //     steps {
+        //         git branch: 'main', url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
+        //     }
+        // }
+
+         stage('Checkout Source') {
             steps {
-                git branch: 'main', url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: 'main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/Balaganesh15M/demo-jenkin.git',
+                        credentialsId: 'github-creds'
+                    ]]
+                ])
             }
         }
 
