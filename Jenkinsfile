@@ -36,7 +36,7 @@ pipeline {
 
         stage('Deploy to Minikube') {
             steps {
-                sh 'kubectl apply -f deployment.yaml'
+                sh 'kubectl rollout restart deployment/userapi'
             }
         }
     }
