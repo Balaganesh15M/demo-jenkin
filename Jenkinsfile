@@ -16,7 +16,7 @@ pipeline {
             steps {
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: 'main']],
+                    branches: [[name: '*/main']],
                     userRemoteConfigs: [[
                         url: 'https://github.com/Balaganesh15M/demo-jenkin.git',
                         credentialsId: 'github-private'
