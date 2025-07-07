@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         dockerimagename = "bala1511/userapi:latest"
+        registryCredentials = 'dockerhub'        
+        githubCredentials = 'github-private'      
     }
 
     stages {
