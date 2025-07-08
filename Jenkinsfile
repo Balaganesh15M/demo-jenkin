@@ -8,8 +8,6 @@ spec:
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:latest
-    command:
-    - cat
     tty: true
     volumeMounts:
       - name: docker-config
@@ -23,12 +21,12 @@ spec:
   }
 
   environment {
-    IMAGE = 'bala1115/userapi'
+    IMAGE = 'bala1115/userapinew'
     TAG = "build-${BUILD_NUMBER}"
   }
 
   stages {
-    stage('Clone Repo') {
+    stage('Checkout') {
       steps {
         container('kaniko') {
           checkout scm
@@ -36,15 +34,15 @@ spec:
       }
     }
 
-    stage('Build & Push Image') {
+    stage('Build & Push') {
       steps {
         container('kaniko') {
           sh """
-          /kaniko/executor \
-            --context `pwd` \
-            --dockerfile `pwd`/Dockerfile \
-            --destination=$IMAGE:$TAG \
-            --destination=$IMAGE:latest
+            /kaniko/executor \
+              --context `pwd` \
+              --dockerfile `pwd`/Dockerfile \
+              --destination=$IMAGE:$TAG \
+              --destination=$IMAGE:latest
           """
         }
       }
