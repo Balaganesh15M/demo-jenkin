@@ -1,43 +1,53 @@
-
 pipeline {
-    agent any
+  agent {
+    kubernetes {
+      yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:latest
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+      - name: docker-config
+        mountPath: /kaniko/.docker
+  volumes:
+    - name: docker-config
+      secret:
+        secretName: docker-hub-creds
+"""
+    }
+  }
 
-    environment {
-        dockerimagename = "bala1511/userapi:latest"
+  environment {
+    IMAGE = 'bala1115/userapi'
+    TAG = "build-${BUILD_NUMBER}"
+  }
+
+  stages {
+    stage('Clone Repo') {
+      steps {
+        container('kaniko') {
+          checkout scm
+        }
+      }
     }
 
-    stages {
-        stage('Checkout Source') {
-            steps {
-                git branch: 'main', url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
-            }
+    stage('Build & Push Image') {
+      steps {
+        container('kaniko') {
+          sh """
+          /kaniko/executor \
+            --context `pwd` \
+            --dockerfile `pwd`/Dockerfile \
+            --destination=$IMAGE:$TAG \
+            --destination=$IMAGE:latest
+          """
         }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    dockerImage = docker.build(dockerimagename)
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            environment {
-                registryCredentials = 'dockerhub'
-            }
-            steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', registryCredentials) {
-                        dockerImage.push('latest')
-                    }
-                }
-            }
-        }
-
-        stage('Deploy to Minikube') {
-            steps {
-                sh 'kubectl rollout restart deployment/userapi'
-            }
-        }
+      }
     }
+  }
 }
