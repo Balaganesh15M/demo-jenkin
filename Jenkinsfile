@@ -9,6 +9,13 @@ spec:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:latest
     tty: true
+    command:
+    - /kaniko/executor
+    args:
+    - --dockerfile=Dockerfile
+    - --context=dir://workspace
+    - --destination=docker.io/bala1115/userapinew:\${BUILD_NUMBER}
+    - --destination=docker.io/bala1115/userapinew:latest
     volumeMounts:
       - name: docker-config
         mountPath: /kaniko/.docker
@@ -20,30 +27,11 @@ spec:
     }
   }
 
-  environment {
-    IMAGE = 'bala1115/userapinew'
-    TAG = "build-${BUILD_NUMBER}"
-  }
-
   stages {
-    stage('Checkout') {
+    stage('Build & Push with Kaniko') {
       steps {
         container('kaniko') {
-          checkout scm
-        }
-      }
-    }
-
-    stage('Build & Push') {
-      steps {
-        container('kaniko') {
-          sh """
-            /kaniko/executor \
-              --context `pwd` \
-              --dockerfile `pwd`/Dockerfile \
-              --destination=$IMAGE:$TAG \
-              --destination=$IMAGE:latest
-          """
+          echo 'Building and pushing image with Kaniko...'
         }
       }
     }
