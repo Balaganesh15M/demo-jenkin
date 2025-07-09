@@ -14,9 +14,9 @@ spec:
     image: gcr.io/kaniko-project/executor:v1.9.1
     command: ["/kaniko/executor"]
     args: [
-      "--dockerfile=Dockerfile",
-      "--context=/home/jenkins/agent/workspace",
-      "--destination=docker.io/${env.IMAGE}",
+      "--dockerfile=/workspace/Dockerfile",
+      "--context=/workspace",
+      "--destination=docker.io/\${IMAGE}",
       "--verbosity=debug",
       "--skip-tls-verify"
     ]
@@ -57,24 +57,26 @@ spec:
   stages {
     stage('Checkout Source') {
       steps {
-        git branch: 'main', 
-        url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
+        git branch: 'main',
+            url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
+      }
+    }
+
+    stage('Debug Workspace') {
+      steps {
+        container('kaniko') {
+          sh 'echo "Verifying files in /workspace..."'
+          sh 'ls -la /workspace'
+          sh 'cat /workspace/Dockerfile || echo "Dockerfile not found!"'
+        }
       }
     }
 
     stage('Build with Kaniko') {
       steps {
         container('kaniko') {
-          script {
-            echo "Showing workspace contents:"
-            sh 'ls -l /home/jenkins/agent/workspace'
-            echo "Showing Dockerfile contents:"
-            sh 'cat /home/jenkins/agent/workspace/Dockerfile'
-            echo "Docker config:"
-            sh 'cat /kaniko/.docker/config.json'
-            echo "Starting Kaniko build and push..."
-            // No additional build commands needed; Kaniko does it via args
-          }
+          echo "Kaniko build process should be running now..."
+          // No additional commands needed; args do the build and push
         }
       }
     }
