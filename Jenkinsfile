@@ -10,13 +10,17 @@ metadata:
 spec:
   containers:
   - name: kaniko
-    image: gcr.io/kaniko-project/executor:latest
+    image: gcr.io/kaniko-project/executor:v1.9.1
+    command:
+    - /busybox/sh
+    - -c
     args:
-    - "--dockerfile=Dockerfile"
-    - "--context=dir:///workspace"
-    - "--destination=docker.io/${env.IMAGE}"
-    - "--verbosity=debug"
-    - "--skip-tls-verify"
+    - |
+      /kaniko/executor \
+      --dockerfile=Dockerfile \
+      --context=dir:///workspace \
+      --destination=docker.io/${env.IMAGE} \
+      --verbosity=debug
     volumeMounts:
     - name: docker-config
       mountPath: /kaniko/.docker/
@@ -38,8 +42,7 @@ spec:
   stages {
     stage('Checkout Source') {
       steps {
-        git branch: 'main', 
-        url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
+        git branch: 'main', url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
       }
     }
 
@@ -57,9 +60,7 @@ spec:
     stage('Build with Kaniko') {
       steps {
         container('kaniko') {
-          script {
-            echo "Building Docker image ${env.IMAGE} with Kaniko..."
-          }
+          echo "Kaniko build process should be automatically executing..."
         }
       }
     }
