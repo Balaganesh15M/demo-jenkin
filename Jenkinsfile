@@ -16,7 +16,7 @@ spec:
     - "--context=dir:///workspace"
     - "--destination=docker.io/${env.IMAGE}"
     - "--verbosity=debug"
-    - "--skip-tls-verify"  // Only if using insecure registry
+    - "--skip-tls-verify"
     volumeMounts:
     - name: docker-config
       mountPath: /kaniko/.docker/
@@ -47,7 +47,6 @@ spec:
         container('kaniko') {
           script {
             echo "Building Docker image ${env.IMAGE} with Kaniko..."
-            // Kaniko automatically runs with the args defined in the pod template
           }
         }
       }
