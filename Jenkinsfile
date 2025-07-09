@@ -14,8 +14,8 @@ spec:
     image: gcr.io/kaniko-project/executor:v1.9.1
     command: ["/kaniko/executor"]
     args: [
-      "--dockerfile=/workspace/Dockerfile",
-      "--context=/workspace",
+      "--dockerfile=/workspace/source/Dockerfile",
+      "--context=/workspace/source",
       "--destination=docker.io/\${IMAGE}",
       "--verbosity=debug",
       "--skip-tls-verify"
@@ -23,6 +23,9 @@ spec:
     volumeMounts:
     - name: docker-config
       mountPath: /kaniko/.docker/
+    - name: workspace-volume
+      mountPath: /workspace/source
+    workingDir: /workspace/source
     resources:
       limits:
         cpu: "1"
@@ -32,20 +35,18 @@ spec:
         memory: "512Mi"
   - name: jnlp
     image: jenkins/inbound-agent:latest
-    resources:
-      limits:
-        cpu: "500m"
-        memory: "512Mi"
-      requests:
-        cpu: "200m"
-        memory: "256Mi"
+    volumeMounts:
+    - name: workspace-volume
+      mountPath: /workspace/source
   volumes:
   - name: docker-config
     secret:
       secretName: dockerhub-secret
       items:
-      - key: config.json
-        path: config.json
+        - key: config.json
+          path: config.json
+  - name: workspace-volume
+    emptyDir: {}
 """
     }
   }
@@ -57,26 +58,29 @@ spec:
   stages {
     stage('Checkout Source') {
       steps {
-        git branch: 'main',
-            url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
-      }
-    }
-
-    stage('Debug Workspace') {
-      steps {
-        container('kaniko') {
-          sh 'echo "Verifying files in /workspace..."'
-          sh 'ls -la /workspace'
-          sh 'cat /workspace/Dockerfile || echo "Dockerfile not found!"'
+        container('jnlp') {
+          dir('/workspace/source') {
+            git branch: 'main',
+                url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
+          }
         }
       }
     }
 
-    stage('Build with Kaniko') {
+    stage('Debug Dockerfile Path') {
       steps {
         container('kaniko') {
-          echo "Kaniko build process should be running now..."
-          // No additional commands needed; args do the build and push
+          sh 'ls -l /workspace/source'
+          sh 'cat /workspace/source/Dockerfile || echo "Dockerfile not found"'
+        }
+      }
+    }
+
+    stage('Build and Push Image') {
+      steps {
+        container('kaniko') {
+          echo "Kaniko build and push starting..."
+          // No need to run anything manually, kaniko auto-builds due to command/args
         }
       }
     }
