@@ -38,7 +38,19 @@ spec:
   stages {
     stage('Checkout Source') {
       steps {
-        git branch: 'main', url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
+        git branch: 'main', 
+        url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
+      }
+    }
+
+    stage('Verify Setup') {
+      steps {
+        container('kaniko') {
+          script {
+            sh 'ls -la /kaniko/.docker/'
+            sh 'cat /kaniko/.docker/config.json'
+          }
+        }
       }
     }
 
