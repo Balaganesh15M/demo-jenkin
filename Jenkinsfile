@@ -11,16 +11,11 @@ spec:
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:v1.9.1
-    command:
-    - /busybox/sh
-    - -c
     args:
-    - |
-      /kaniko/executor \
-      --dockerfile=Dockerfile \
-      --context=dir:///workspace \
-      --destination=docker.io/${env.IMAGE} \
-      --verbosity=debug
+    - --dockerfile=Dockerfile
+    - --context=dir:///workspace
+    - --destination=docker.io/${env.IMAGE}
+    - --verbosity=debug
     volumeMounts:
     - name: docker-config
       mountPath: /kaniko/.docker/
@@ -50,8 +45,7 @@ spec:
       steps {
         container('kaniko') {
           script {
-            sh 'ls -la /kaniko/.docker/'
-            sh 'cat /kaniko/.docker/config.json'
+            sh 'ls -la /kaniko/.docker/ || true'
           }
         }
       }
@@ -60,7 +54,7 @@ spec:
     stage('Build with Kaniko') {
       steps {
         container('kaniko') {
-          echo "Kaniko build process should be automatically executing..."
+          echo "Kaniko build process starting..."
         }
       }
     }
