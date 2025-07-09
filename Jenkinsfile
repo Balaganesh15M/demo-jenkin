@@ -1,7 +1,7 @@
 pipeline {
-    agent {
-        kubernetes {
-            yaml """
+  agent {
+    kubernetes {
+      yaml """
 apiVersion: v1
 kind: Pod
 metadata:
@@ -11,9 +11,11 @@ spec:
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:latest
-    command:
-    - cat
-    tty: true
+    args:
+    - "--dockerfile=Dockerfile"
+    - "--context=."
+    - "--destination=docker.io/bala1511/go-kaniko-demo:latest"
+    - "--verbosity=debug"
     volumeMounts:
     - name: docker-config
       mountPath: /kaniko/.docker/
@@ -22,27 +24,23 @@ spec:
     secret:
       secretName: dockerhub-secret
 """
-        }
     }
-    stages {
-        stage('Checkout Source') {
-            steps {
-                git branch: 'main', url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
-            }
-        }
+  }
 
-        stage('Build and Push with Kaniko') {
-            steps {
-                container('kaniko') {
-                    sh '''
-                      /kaniko/executor \
-                        --context=. \
-                        --dockerfile=Dockerfile \
-                        --destination=docker.io/bala1511/go-kaniko-demo:latest \
-                        --verbosity=debug
-                    '''
-                }
-            }
-        }
+  stages {
+    stage('Checkout Source') {
+      steps {
+        git branch: 'main', url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
+      }
     }
+
+    stage('Build & Push with Kaniko') {
+      steps {
+        container('kaniko') {
+          echo "Kaniko is building and pushing the image..."
+          // Nothing to do here because Kaniko runs as entrypoint with args
+        }
+      }
+    }
+  }
 }
