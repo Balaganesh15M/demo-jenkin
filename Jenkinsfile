@@ -15,7 +15,7 @@ spec:
     command: ["/kaniko/executor"]
     args: [
       "--dockerfile=Dockerfile",
-      "--context=dir:///workspace",
+      "--context=/home/jenkins/agent/workspace",
       "--destination=docker.io/${env.IMAGE}",
       "--verbosity=debug",
       "--skip-tls-verify"
@@ -66,12 +66,14 @@ spec:
       steps {
         container('kaniko') {
           script {
-            // Verify Docker config is mounted
-            sh 'ls -la /kaniko/.docker/'
+            echo "Showing workspace contents:"
+            sh 'ls -l /home/jenkins/agent/workspace'
+            echo "Showing Dockerfile contents:"
+            sh 'cat /home/jenkins/agent/workspace/Dockerfile'
+            echo "Docker config:"
             sh 'cat /kaniko/.docker/config.json'
-            
-            // The actual build happens automatically via the container's command
-            echo "Kaniko build process should be running now..."
+            echo "Starting Kaniko build and push..."
+            // No additional build commands needed; Kaniko does it via args
           }
         }
       }
