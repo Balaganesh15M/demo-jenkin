@@ -13,9 +13,10 @@ spec:
     image: gcr.io/kaniko-project/executor:latest
     args:
     - "--dockerfile=Dockerfile"
-    - "--context=dir://\$(WORKSPACE)"
-    - "--destination=docker.io/bala1511/go-kaniko-demo:latest"
+    - "--context=dir:///workspace"
+    - "--destination=docker.io/${env.IMAGE}"
     - "--verbosity=debug"
+    - "--skip-tls-verify"  // Only if using insecure registry
     volumeMounts:
     - name: docker-config
       mountPath: /kaniko/.docker/
@@ -23,6 +24,9 @@ spec:
   - name: docker-config
     secret:
       secretName: dockerhub-secret
+      items:
+      - key: config.json
+        path: config.json
 """
     }
   }
@@ -41,8 +45,10 @@ spec:
     stage('Build with Kaniko') {
       steps {
         container('kaniko') {
-          echo "Building Docker image with Kaniko..."
-          // Kaniko runs with args — no shell command needed
+          script {
+            echo "Building Docker image ${env.IMAGE} with Kaniko..."
+            // Kaniko automatically runs with the args defined in the pod template
+          }
         }
       }
     }
