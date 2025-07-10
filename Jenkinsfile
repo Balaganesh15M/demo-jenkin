@@ -14,11 +14,11 @@ spec:
     image: gcr.io/kaniko-project/executor:v1.9.1
     command: ["/kaniko/executor"]
     args:
-    - "--dockerfile=Dockerfile"
-    - "--context=dir:///workspace"
-    - "--destination=docker.io/bala1511/demo-jenkin:latest"
-    - "--verbosity=debug"
-    - "--skip-tls-verify"
+    - --dockerfile=Dockerfile
+    - --context=dir:///workspace
+    - --destination=docker.io/bala1511/demo-jenkin:latest
+    - --verbosity=debug
+    - --skip-tls-verify
     volumeMounts:
     - name: docker-config
       mountPath: /kaniko/.docker
@@ -26,11 +26,13 @@ spec:
       mountPath: /workspace
     resources:
       limits:
-        cpu: "1"
-        memory: "1Gi"
+        cpu: "200m"
+        memory: "256Mi"
       requests:
-        cpu: "500m"
-        memory: "512Mi"
+        cpu: "100m"
+        memory: "128Mi"
+    securityContext:
+      runAsUser: 0
   - name: jnlp
     image: jenkins/inbound-agent:latest
     volumeMounts:
@@ -38,10 +40,10 @@ spec:
       mountPath: /workspace
     resources:
       limits:
-        cpu: "500m"
+        cpu: "250m"
         memory: "512Mi"
       requests:
-        cpu: "200m"
+        cpu: "100m"
         memory: "256Mi"
   volumes:
   - name: docker-config
@@ -69,10 +71,11 @@ spec:
       steps {
         container('kaniko') {
           script {
-            // Verify code was checked out
+            // Verify workspace content
             sh 'ls -la /workspace'
-            // Verify Docker config is mounted
+            // Verify Docker config
             sh 'ls -la /kaniko/.docker/'
+            sh 'cat /kaniko/.docker/config.json || true'
             // Verify Dockerfile exists
             sh 'test -f /workspace/Dockerfile && echo "Dockerfile found" || echo "ERROR: Dockerfile missing"'
           }
@@ -84,8 +87,8 @@ spec:
       steps {
         container('kaniko') {
           script {
-            echo 'Kaniko build process starting...'
-            // The actual build happens automatically via Kaniko's command
+            echo 'Starting Kaniko build process...'
+            // The actual build happens automatically via the container command
           }
         }
       }
