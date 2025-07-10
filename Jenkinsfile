@@ -6,47 +6,19 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    jenkins: agent
+    some-label: kaniko-job
 spec:
   containers:
-  - name: golang
-    image: golang:1.22
-    command:
-    - sleep
-    args:
-    - "9999"
-    resources:
-      requests:
-        cpu: "100m"
-        memory: "256Mi"
-    volumeMounts:
-    - mountPath: /home/jenkins/agent/workspace
-      name: workspace-volume
-    workingDir: /home/jenkins/agent/workspace
-
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
     command:
     - cat
     tty: true
-    resources:
-      requests:
-        cpu: "100m"
-        memory: "512Mi"
     volumeMounts:
     - name: docker-config
       mountPath: /kaniko/.docker
     - name: workspace-volume
-      mountPath: /home/jenkins/agent/workspace
-    workingDir: /home/jenkins/agent/workspace
-
-  - name: jnlp
-    image: jenkins/inbound-agent:3309.v27b_9314fd1a_4-7
-    resources:
-      requests:
-        cpu: "512m"
-        memory: "512Mi"
-
+      mountPath: /workspace
   volumes:
   - name: docker-config
     secret:
@@ -61,58 +33,29 @@ spec:
   }
 
   environment {
-    DOCKER_IMAGE = "docker.io/bala1511/userapi:latest"
-    WORKDIR = "/home/jenkins/agent/workspace"
+    IMAGE = 'bala1511/userapi:latest'
   }
 
   stages {
-
-    stage('Checkout Code') {
+    stage('Checkout') {
       steps {
-        git branch: 'main', url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
+        checkout scm
       }
     }
 
-    stage('Verify Workspace') {
+    stage('Build with Kaniko') {
       steps {
-        container('golang') {
+        container('kaniko') {
           sh '''
-            echo "=== Listing Workspace Contents ==="
-            ls -l $WORKDIR
-            echo "=== Dockerfile Content Preview ==="
-            head -n 20 $WORKDIR/Dockerfile
+            echo "🚀 Starting Kaniko Build"
+            /kaniko/executor \
+              --context=dir:///workspace \
+              --dockerfile=/workspace/Dockerfile \
+              --destination=docker.io/${IMAGE} \
+              --verbosity=debug
           '''
         }
       }
-    }
-
-    stage('Make Image') {
-  steps {
-    container('kaniko') {
-      sh '''
-        echo "✅ Checking context contents:"
-        ls -la /home/jenkins/agent/workspace/new
-
-        echo "✅ Showing Dockerfile content:"
-        cat /home/jenkins/agent/workspace/new/Dockerfile || echo "❌ Dockerfile not found!"
-
-        echo "🚀 Running Kaniko executor"
-        /kaniko/executor \
-          --context=dir:///home/jenkins/agent/workspace/new \
-          --dockerfile=Dockerfile \
-          --destination=docker.io/bala1511/userapi:latest \
-          --verbosity=debug
-      '''
-    }
-  }
-}
-
-  post {
-    failure {
-      echo '❌ Build failed!'
-    }
-    success {
-      echo '✅ Image built and pushed successfully.'
     }
   }
 }
