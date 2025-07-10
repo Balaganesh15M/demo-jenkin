@@ -32,8 +32,8 @@ spec:
           memory: "512Mi"
 
     - name: golang
-      image: golang:1.22-alpine
-      command: ["cat"]
+      image: golang:1.22
+      command: ["sleep", "9999"]
       tty: true
       volumeMounts:
         - mountPath: /home/jenkins/agent/workspace
