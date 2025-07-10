@@ -18,7 +18,7 @@ spec:
     workingDir: /workspace
     resources:
       requests:
-        cpu: "200m"
+        cpu: "100m"
         memory: "256Mi"
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
@@ -33,7 +33,7 @@ spec:
     workingDir: /workspace
     resources:
       requests:
-        cpu: "500m"
+        cpu: "100m"
         memory: "512Mi"
   volumes:
   - name: docker-config
