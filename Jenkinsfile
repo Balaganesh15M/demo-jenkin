@@ -12,22 +12,14 @@ spec:
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:v1.9.1
-    command: ["/kaniko/executor"]
-    args:
-  - |
-    echo "== START Kaniko ==";
-    ls -l /workspace/source;
-    echo "== Docker Config ==";
-    cat /kaniko/.docker/config.json || echo "No config";
-    echo "== Running Kaniko ==";
-    /kaniko/executor \
-      --dockerfile=/workspace/source/Dockerfile \
-      --context=/workspace/source \
-      --destination=docker.io/${env.IMAGE} \
-      --verbosity=debug \
-      --skip-tls-verify;
-    echo "== Kaniko Finished =="
-    ]
+    command: ["/busybox/sh", "-c"]
+    args: ["echo '== START Kaniko ==';
+            ls -l /workspace/source;
+            echo '== Docker Config ==';
+            cat /kaniko/.docker/config.json || echo 'No config';
+            echo '== Running Kaniko ==';
+            /kaniko/executor --dockerfile=/workspace/source/Dockerfile --context=/workspace/source --destination=docker.io/\${IMAGE} --verbosity=debug --skip-tls-verify;
+            echo '== Kaniko Finished =='"]
     volumeMounts:
     - name: docker-config
       mountPath: /kaniko/.docker/
@@ -88,7 +80,6 @@ spec:
       steps {
         container('kaniko') {
           echo "Kaniko build and push starting..."
-          // No need to run anything manually, kaniko auto-builds due to command/args
         }
       }
     }
