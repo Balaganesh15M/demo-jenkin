@@ -20,6 +20,7 @@ spec:
       requests:
         cpu: "100m"
         memory: "256Mi"
+        
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
     imagePullPolicy: Always
@@ -35,6 +36,18 @@ spec:
       requests:
         cpu: "100m"
         memory: "512Mi"
+        
+  - name: jnlp
+    image: jenkins/inbound-agent:latest
+    args: ['-url', 'http://jenkins.jenkins.svc.cluster.local:8080', 'SECRET', 'AGENT_NAME']
+    volumeMounts:
+    - mountPath: /home/jenkins/agent
+      name: workspace-volume
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+        
   volumes:
   - name: docker-config
     secret:
