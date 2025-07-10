@@ -23,7 +23,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Welcome to the User API! Visit /users to get the list.")
+	fmt.Fprintln(w, "Welcome to the User API! Visit /users to get the list.10-07-2025")
 }
 
 func main() {
