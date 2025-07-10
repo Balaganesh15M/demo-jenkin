@@ -46,7 +46,7 @@ spec:
     stage('Build with Kaniko') {
       steps {
         container('kaniko') {
-          sh '''
+          bash '''
             echo "🚀 Starting Kaniko Build"
             /kaniko/executor \
               --context=dir:///workspace \
