@@ -3,56 +3,64 @@ pipeline {
         kubernetes {
             label 'kaniko'
             yaml """
-apiVersion: v1
 kind: Pod
+metadata:
+  name: kaniko
 spec:
   containers:
-  - name: kaniko
-    image: gcr.io/kaniko-project/executor:latest
+  - name: golang
+    image: golang:1.12
     command:
-    - /busybox/sh
-    args:
-    - -c
-    - sleep 3600
+    - cat
+    tty: true
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    imagePullPolicy: Always
+    command:
+    - /busybox/cat
+    tty: true
     volumeMounts:
-    - name: docker-config
-      mountPath: /kaniko/.docker
-    - name: workspace
-      mountPath: /workspace
+      - name: jenkins-docker-cfg
+        mountPath: /kaniko/.docker
   volumes:
-  - name: docker-config
-    secret:
-      secretName: dockerhub-secret
-  - name: workspace
-    emptyDir: {}
+  - name: jenkins-docker-cfg
+    projected:
+      sources:
+      - secret:
+          name: dockerhub-secret
+          items:
+            - key: .dockerconfigjson
+              path: config.json
 """
         }
     }
-
     stages {
         stage('Checkout') {
             steps {
-                container('kaniko') {
-                    // Replace with your repository and branch details
-                   git branch: 'main', 
-                                      url: 'https://github.com/Balaganesh15M/demo-jenkin.git',
+                git 'https://github.com/Balaganesh15M/demo-jenkin.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                container('golang') {
+                    sh './build-go-bin.sh'
                 }
             }
         }
-
-        stage('Build and Push') {
+        stage('Make Image') {
+            environment {
+                PATH        = "/busybox:$PATH"
+                REGISTRY    = 'index.docker.io' // Configure your own registry
+                REPOSITORY  = 'bala1511'
+                IMAGE       = 'jenkins-demo'
+            }
             steps {
-                container('kaniko') {
-                    // Set the shell to busybox sh to avoid issues with other shells
-                    withEnv(["PATH+MAVEN=/usr/local/maven/bin", "PATH=${WORKSPACE}/bin:${PATH}"]) {
-                        sh """
-                        /kaniko/executor \
-                          --context=${WORKSPACE} \
-                          --dockerfile=${WORKSPACE}/Dockerfile \
-                          --destination=bala1511/jenkins-demo:latest
-                        """
-                    }
+                container(name: 'kaniko', shell: '/busybox/sh') {
+                    sh '''#!/busybox/sh
+                    /kaniko/executor -f `pwd`/Dockerfile.run -c `pwd` --cache=true --destination=${REGISTRY}/${REPOSITORY}/${IMAGE}
+                    '''
                 }
             }
         }
     }
+}
