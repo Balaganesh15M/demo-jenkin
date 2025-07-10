@@ -11,11 +11,12 @@ spec:
   containers:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.9.1
-      command:
-        - /busybox/sh
       args:
-        - -c
-        - 'while true; do sleep 30; done'
+        - --dockerfile=/workspace/Dockerfile
+        - --context=dir:///workspace
+        - --destination=docker.io/bala1511/demo-jenkin:latest
+        - --verbosity=debug
+        - --skip-tls-verify
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker
@@ -49,19 +50,10 @@ spec:
         }
       }
     }
-
-    stage('Build & Push Docker Image with Kaniko') {
+    stage('Build & Push Image') {
       steps {
-        container('kaniko') {
-          sh '''
-            /kaniko/executor \
-              --dockerfile=/workspace/Dockerfile \
-              --context=dir:///workspace \
-              --destination=docker.io/bala1511/demo-jenkin:latest \
-              --verbosity=debug \
-              --skip-tls-verify
-          '''
-        }
+        // Nothing to do — Kaniko runs automatically using args
+        echo 'Kaniko is building and pushing the image...'
       }
     }
   }
