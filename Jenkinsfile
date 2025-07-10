@@ -12,13 +12,8 @@ spec:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.9.1
       command:
-        - /kaniko/executor
-      args:
-        - --dockerfile=/workspace/Dockerfile
-        - --context=dir:///workspace
-        - --destination=docker.io/bala1511/demo-jenkin:latest
-        - --verbosity=debug
-        - --skip-tls-verify
+        - cat
+      tty: true
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker
@@ -56,8 +51,16 @@ spec:
     stage('Build and Push Image') {
       steps {
         container('kaniko') {
-          echo '🚀 Building Docker image with Kaniko...'
-          // Kaniko runs automatically from args, nothing else needed
+          dir('/workspace') {
+            sh '''
+              /kaniko/executor \
+                --dockerfile=/workspace/Dockerfile \
+                --context=dir:///workspace \
+                --destination=docker.io/bala1511/demo-jenkin:latest \
+                --verbosity=debug \
+                --skip-tls-verify
+            '''
+          }
         }
       }
     }
