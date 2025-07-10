@@ -7,35 +7,37 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    some-label: kaniko
+    job: kaniko
 spec:
   containers:
-  - name: kaniko
-    image: gcr.io/kaniko-project/executor:v1.9.1
-    args:
-      - --dockerfile=/workspace/source/Dockerfile
-      - --context=/workspace/source
-      - --destination=docker.io/\${IMAGE}
-      - --verbosity=debug
-      - --skip-tls-verify
-    volumeMounts:
-      - name: docker-config
-        mountPath: /kaniko/.docker/
-      - name: workspace-volume
-        mountPath: /workspace/source
-    workingDir: /workspace/source
-    resources:
-      limits:
-        cpu: "1"
-        memory: "1Gi"
-      requests:
-        cpu: "500m"
-        memory: "512Mi"
-  - name: jnlp
-    image: jenkins/inbound-agent:latest
-    volumeMounts:
-      - name: workspace-volume
-        mountPath: /workspace/source
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:v1.9.1
+      command:
+        - /kaniko/executor
+      args:
+        - --dockerfile=/workspace/source/Dockerfile
+        - --context=/workspace/source
+        - --destination=docker.io/\${IMAGE}
+        - --verbosity=debug
+        - --skip-tls-verify
+      volumeMounts:
+        - name: docker-config
+          mountPath: /kaniko/.docker/
+        - name: workspace-volume
+          mountPath: /workspace/source
+      workingDir: /workspace/source
+      resources:
+        limits:
+          cpu: "1"
+          memory: "1Gi"
+        requests:
+          cpu: "500m"
+          memory: "512Mi"
+    - name: jnlp
+      image: jenkins/inbound-agent:latest
+      volumeMounts:
+        - name: workspace-volume
+          mountPath: /workspace/source
   volumes:
     - name: docker-config
       secret:
@@ -54,8 +56,7 @@ spec:
   }
 
   stages {
-
-    stage('Checkout Source') {
+    stage('Checkout') {
       steps {
         container('jnlp') {
           dir('/workspace/source') {
@@ -66,22 +67,11 @@ spec:
       }
     }
 
-    stage('Verify Dockerfile Exists') {
-      steps {
-        container('jnlp') {
-          dir('/workspace/source') {
-            sh 'ls -l'
-            sh 'cat Dockerfile || echo "Dockerfile not found!"'
-          }
-        }
-      }
-    }
-
-    stage('Build and Push Image with Kaniko') {
+    stage('Build with Kaniko') {
       steps {
         container('kaniko') {
-          echo "✅ Kaniko is building and pushing the Docker image..."
-          // Kaniko will automatically execute based on `args` in the pod spec
+          echo "✅ Kaniko should be running the executor now..."
+          // Kaniko automatically builds and pushes due to command + args
         }
       }
     }
