@@ -1,7 +1,7 @@
 pipeline {
     agent {
         kubernetes {
-            inheritFrom 'default'  // Use your existing agent template
+            inheritFrom 'default'
             yaml """
 kind: Pod
 metadata:
@@ -9,13 +9,13 @@ metadata:
 spec:
   containers:
   - name: golang
-    image: golang:1.12
+    image: golang:1.18  # Updated Go version
     command: ["cat"]
     tty: true
     volumeMounts:
-      - name: workspace-volume
-        mountPath: /workspace
-    workingDir: /workspace
+    - mountPath: /home/jenkins/agent/workspace
+      name: workspace-volume
+    workingDir: /home/jenkins/agent/workspace
     resources:
       requests:
         cpu: "100m"
@@ -26,11 +26,11 @@ spec:
     command: ["cat"]
     tty: true
     volumeMounts:
-      - name: docker-config
-        mountPath: /kaniko/.docker
-      - name: workspace-volume
-        mountPath: /workspace
-    workingDir: /workspace
+    - mountPath: /kaniko/.docker
+      name: docker-config
+    - mountPath: /home/jenkins/agent/workspace
+      name: workspace-volume
+    workingDir: /home/jenkins/agent/workspace
     resources:
       requests:
         cpu: "100m"
@@ -47,44 +47,57 @@ spec:
 """
         }
     }
+    environment {
+        REPO_DIR = "/home/jenkins/agent/workspace"
+    }
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'main',
                 url: 'https://github.com/Balaganesh15M/demo-jenkin.git',
-                credentialsId: 'github-creds'
+                
             }
         }
         stage('Verify Setup') {
             steps {
                 container('golang') {
-                    sh 'ls -la /workspace'
-                }
-                container('kaniko') {
-                    sh 'ls -la /kaniko/.docker'
+                    script {
+                        sh """
+                        echo "Workspace contents:"
+                        ls -la ${REPO_DIR}
+                        echo "Build script exists?"
+                        test -f ${REPO_DIR}/build-go-bin.sh && echo "Yes" || echo "No"
+                        """
+                    }
                 }
             }
         }
         stage('Build') {
             steps {
                 container('golang') {
-                    sh './build-go-bin.sh'
+                    script {
+                        sh """
+                        cd ${REPO_DIR}
+                        chmod +x build-go-bin.sh  # Ensure executable
+                        ./build-go-bin.sh
+                        """
+                    }
                 }
             }
         }
         stage('Make Image') {
             environment {
-                REGISTRY    = 'index.docker.io'
-                REPOSITORY  = 'bala1511'
-                IMAGE       = 'jenkins-demo'
+                REGISTRY = 'index.docker.io'
+                REPOSITORY = 'bala1511'
+                IMAGE = 'jenkins-demo'
             }
             steps {
                 container('kaniko') {
                     script {
                         sh """
                         /kaniko/executor \
-                        --dockerfile=Dockerfile.run \
-                        --context=/workspace \
+                        --dockerfile=${REPO_DIR}/Dockerfile.run \
+                        --context=${REPO_DIR} \
                         --destination=${REGISTRY}/${REPOSITORY}/${IMAGE}:latest \
                         --cache=true \
                         --verbosity=debug
