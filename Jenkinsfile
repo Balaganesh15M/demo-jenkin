@@ -1,7 +1,7 @@
 pipeline {
     agent {
         kubernetes {
-            label 'kaniko'
+            inheritFrom 'default'  // Use your existing agent template
             yaml """
 kind: Pod
 metadata:
@@ -16,19 +16,27 @@ spec:
       - name: workspace-volume
         mountPath: /workspace
     workingDir: /workspace
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
     imagePullPolicy: Always
     command: ["cat"]
     tty: true
     volumeMounts:
-      - name: jenkins-docker-cfg
+      - name: docker-config
         mountPath: /kaniko/.docker
       - name: workspace-volume
         mountPath: /workspace
     workingDir: /workspace
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
   volumes:
-  - name: jenkins-docker-cfg
+  - name: docker-config
     secret:
       secretName: dockerhub-secret
       items:
@@ -45,6 +53,16 @@ spec:
                 git branch: 'main',
                 url: 'https://github.com/Balaganesh15M/demo-jenkin.git',
                 credentialsId: 'github-creds'
+            }
+        }
+        stage('Verify Setup') {
+            steps {
+                container('golang') {
+                    sh 'ls -la /workspace'
+                }
+                container('kaniko') {
+                    sh 'ls -la /kaniko/.docker'
+                }
             }
         }
         stage('Build') {
