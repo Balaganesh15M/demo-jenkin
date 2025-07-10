@@ -1,6 +1,7 @@
 pipeline {
   agent {
     kubernetes {
+      defaultContainer 'jnlp'
       yaml """
 apiVersion: v1
 kind: Pod
@@ -23,11 +24,25 @@ spec:
       mountPath: /kaniko/.docker
     - name: workspace-volume
       mountPath: /workspace
+    resources:
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
   - name: jnlp
     image: jenkins/inbound-agent:latest
     volumeMounts:
     - name: workspace-volume
       mountPath: /workspace
+    resources:
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
   volumes:
   - name: docker-config
     secret:
@@ -46,7 +61,7 @@ spec:
       steps {
         git branch: 'main', 
         url: 'https://github.com/Balaganesh15M/demo-jenkin.git',
-        credentialsId: 'your-git-credentials'  // Add your Git credentials ID here
+        credentialsId: 'your-git-credentials'
       }
     }
 
@@ -58,6 +73,8 @@ spec:
             sh 'ls -la /workspace'
             // Verify Docker config is mounted
             sh 'ls -la /kaniko/.docker/'
+            // Verify Dockerfile exists
+            sh 'test -f /workspace/Dockerfile && echo "Dockerfile found" || echo "ERROR: Dockerfile missing"'
           }
         }
       }
@@ -67,10 +84,8 @@ spec:
       steps {
         container('kaniko') {
           script {
-            echo 'Building Docker image from Git repository...'
+            echo 'Kaniko build process starting...'
             // The actual build happens automatically via Kaniko's command
-            // Verify Dockerfile exists
-            sh 'test -f /workspace/Dockerfile && echo "Dockerfile found" || echo "Dockerfile missing"'
           }
         }
       }
