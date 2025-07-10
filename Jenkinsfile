@@ -86,21 +86,26 @@ spec:
       }
     }
 
-    stage('Build and Push Image with Kaniko') {
-      steps {
-        container('kaniko') {
-          sh '''
-            echo "=== Running Kaniko Build ==="
-            /kaniko/executor \
-              --context=dir://$WORKDIR \
-              --dockerfile=$WORKDIR/Dockerfile \
-              --destination=$DOCKER_IMAGE \
-              --verbosity=debug
-          '''
-        }
-      }
+    stage('Make Image') {
+  steps {
+    container('kaniko') {
+      sh '''
+        echo "✅ Checking context contents:"
+        ls -la /home/jenkins/agent/workspace/new
+
+        echo "✅ Showing Dockerfile content:"
+        cat /home/jenkins/agent/workspace/new/Dockerfile || echo "❌ Dockerfile not found!"
+
+        echo "🚀 Running Kaniko executor"
+        /kaniko/executor \
+          --context=dir:///home/jenkins/agent/workspace/new \
+          --dockerfile=Dockerfile \
+          --destination=docker.io/bala1511/userapi:latest \
+          --verbosity=debug
+      '''
     }
   }
+}
 
   post {
     failure {
