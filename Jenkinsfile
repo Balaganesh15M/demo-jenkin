@@ -54,7 +54,7 @@ spec:
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                url: 'https://github.com/Balaganesh15M/demo-jenkin.git',
+                url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
   
             }
         }
