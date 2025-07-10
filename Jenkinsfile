@@ -43,10 +43,10 @@ spec:
       }
     }
 
-    sh '''
-  echo '📂 Listing contents of /workspace...'
-  ls -l /workspace
-
+    stage('Build with Kaniko') {
+      steps {
+        container('kaniko') {
+          sh '''
   echo '🚀 Starting Kaniko Build'
   /kaniko/executor \
     --context=dir:///workspace \
@@ -55,5 +55,8 @@ spec:
     --verbosity=debug
 '''
 
+        }
+      }
+    }
   }
 }
