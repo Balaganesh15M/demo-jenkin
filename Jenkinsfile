@@ -1,13 +1,12 @@
 pipeline {
   agent {
     kubernetes {
-      defaultContainer 'jnlp'
       yaml """
 apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    jenkins-agent: kaniko
+    jenkins: kaniko-agent
 spec:
   containers:
     - name: kaniko
@@ -15,22 +14,21 @@ spec:
       command:
         - /kaniko/executor
       args:
-        - --dockerfile=/workspace/source/Dockerfile
-        - --context=dir:///workspace/source
-        - --destination=docker.io/\${IMAGE}
+        - --dockerfile=/workspace/Dockerfile
+        - --context=dir:///workspace
+        - --destination=docker.io/bala1511/go-kaniko-demo:latest
         - --verbosity=debug
         - --skip-tls-verify
       volumeMounts:
         - name: docker-config
-          mountPath: /kaniko/.docker/
+          mountPath: /kaniko/.docker
         - name: workspace-volume
-          mountPath: /workspace/source
-      workingDir: /workspace/source
+          mountPath: /workspace
     - name: jnlp
       image: jenkins/inbound-agent:latest
       volumeMounts:
         - name: workspace-volume
-          mountPath: /workspace/source
+          mountPath: /workspace
   volumes:
     - name: docker-config
       secret:
@@ -44,27 +42,22 @@ spec:
     }
   }
 
-  environment {
-    IMAGE = "bala1511/go-kaniko-demo:latest"
-  }
-
   stages {
     stage('Checkout') {
       steps {
         container('jnlp') {
-          dir('/workspace/source') {
-            git branch: 'main',
-                url: 'https://github.com/Balaganesh15M/demo-jenkin.git'
+          dir('/workspace') {
+            git url: 'https://github.com/Balaganesh15M/demo-jenkin.git', branch: 'main'
           }
         }
       }
     }
 
-    stage('Build & Push') {
+    stage('Build and Push with Kaniko') {
       steps {
         container('kaniko') {
-          echo "✅ Kaniko container will now build and push the image..."
-          // No shell or sh step required
+          echo '✅ Building image using Kaniko...'
+          // No shell commands needed — Kaniko auto-runs
         }
       }
     }
