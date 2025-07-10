@@ -6,7 +6,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    jenkins: kaniko-agent
+    jenkins: kaniko
 spec:
   containers:
     - name: kaniko
@@ -16,7 +16,7 @@ spec:
       args:
         - --dockerfile=/workspace/Dockerfile
         - --context=dir:///workspace
-        - --destination=docker.io/bala1511/go-kaniko-demo:latest
+        - --destination=docker.io/bala1511/demo-jenkin:latest
         - --verbosity=debug
         - --skip-tls-verify
       volumeMounts:
@@ -43,7 +43,7 @@ spec:
   }
 
   stages {
-    stage('Checkout') {
+    stage('Clone Repo') {
       steps {
         container('jnlp') {
           dir('/workspace') {
@@ -53,11 +53,11 @@ spec:
       }
     }
 
-    stage('Build and Push with Kaniko') {
+    stage('Build and Push Image') {
       steps {
         container('kaniko') {
-          echo '✅ Building image using Kaniko...'
-          // No shell commands needed — Kaniko auto-runs
+          echo '🚀 Building Docker image with Kaniko...'
+          // Kaniko runs automatically from args, nothing else needed
         }
       }
     }
