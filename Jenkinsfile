@@ -46,14 +46,23 @@ spec:
     stage('Build with Kaniko') {
       steps {
         container('kaniko') {
-          sh '''
-  echo '🚀 Starting Kaniko Build'
-  /kaniko/executor \
-    --context=dir:///workspace \
-    --dockerfile=/workspace/Dockerfile \
-    --destination=docker.io/bala1511/userapi:latest \
-    --verbosity=debug
-'''
+          stage('Build with Kaniko') {
+  container('kaniko') {
+    sh '''
+      echo '📂 Contents of /workspace:'
+      ls -la /workspace
+    '''
+    sh '''
+      echo '🚀 Starting Kaniko Build'
+      /kaniko/executor \
+        --context=dir:///workspace \
+        --dockerfile=/workspace/Dockerfile \
+        --destination=docker.io/bala1511/userapi:latest \
+        --verbosity=debug
+    '''
+  }
+}
+
 
         }
       }
