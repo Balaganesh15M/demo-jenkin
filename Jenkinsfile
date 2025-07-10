@@ -7,18 +7,19 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    job: kaniko
+    jenkins-agent: kaniko
 spec:
   containers:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.9.1
-      command: ["/kaniko/executor"]
+      command:
+        - /kaniko/executor
       args:
-        - "--dockerfile=/workspace/source/Dockerfile"
-        - "--context=dir:///workspace/source"
-        - "--destination=docker.io/\${IMAGE}"
-        - "--verbosity=debug"
-        - "--skip-tls-verify"
+        - --dockerfile=/workspace/source/Dockerfile
+        - --context=dir:///workspace/source
+        - --destination=docker.io/\${IMAGE}
+        - --verbosity=debug
+        - --skip-tls-verify
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker/
@@ -59,11 +60,11 @@ spec:
       }
     }
 
-    stage('Build & Push with Kaniko') {
+    stage('Build & Push') {
       steps {
         container('kaniko') {
-          echo "🚀 Kaniko building & pushing image..."
-          // No shell needed — kaniko executes automatically
+          echo "✅ Kaniko container will now build and push the image..."
+          // No shell or sh step required
         }
       }
     }
