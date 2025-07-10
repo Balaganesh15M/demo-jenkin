@@ -1,7 +1,7 @@
 pipeline {
-  agent {
-    kubernetes {
-      yaml """
+    agent {
+        kubernetes {
+            yaml """
 apiVersion: v1
 kind: Pod
 metadata:
@@ -19,6 +19,16 @@ spec:
       mountPath: /kaniko/.docker
     - name: workspace-volume
       mountPath: /workspace
+  - name: jnlp
+    image: jenkins/inbound-agent:3309.v27b_9314fd1a_4-1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    volumeMounts:
+    - name: workspace-volume
+      mountPath: /home/jenkins/agent
+  restartPolicy: Never
   volumes:
   - name: docker-config
     secret:
@@ -29,39 +39,35 @@ spec:
   - name: workspace-volume
     emptyDir: {}
 """
-    }
-  }
-
-  environment {
-    IMAGE = 'bala1511/userapi:latest'
-  }
-
-  stages {
-    stage('Checkout') {
-      steps {
-        checkout scm
-      }
+        }
     }
 
-   
+    environment {
+        IMAGE = "bala1511/userapi:latest"
+    }
 
+    stages {
+        stage('Checkout Source') {
+            steps {
+                checkout scm
+            }
+        }
 
-      stage('Build with Kaniko') {
-  container('kaniko') {
-    sh '''
-      echo '📂 Contents of /workspace:'
-      ls -la /workspace
-    '''
-    sh '''
-      echo '🚀 Starting Kaniko Build'
-      /kaniko/executor \
-        --context=dir:///workspace \
-        --dockerfile=/workspace/Dockerfile \
-        --destination=docker.io/bala1511/userapi:latest \
-        --verbosity=debug
-    '''
-  }
-}
-
-  }
+        stage('Build with Kaniko') {
+            steps {
+                container('kaniko') {
+                    sh '''
+                      echo "📂 Listing /workspace:"
+                      ls -la /workspace
+                      
+                      echo "🚀 Starting Kaniko Build"
+                      /kaniko/executor \
+                        --context=dir:///workspace \
+                        --destination=docker.io/${IMAGE} \
+                        --verbosity=debug
+                    '''
+                }
+            }
+        }
+    }
 }
