@@ -4,8 +4,8 @@ FROM golang:1.22 as builder
 WORKDIR /app
 COPY . .
 
-# Build the binary statically
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o userapi .
+# ✅ Disable VCS stamping to fix the build error
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -buildvcs=false -o userapi .
 
 # Stage 2: Run
 FROM scratch
