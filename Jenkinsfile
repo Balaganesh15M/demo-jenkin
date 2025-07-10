@@ -8,12 +8,11 @@ metadata:
   labels:
     jenkins: kaniko
 spec:
-  activeDeadlineSeconds: 900
   containers:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.9.1
       command:
-        - /busybox/cat
+        - cat
       tty: true
       volumeMounts:
         - name: docker-config
@@ -35,8 +34,6 @@ spec:
     - name: workspace-volume
       emptyDir: {}
 """
-      defaultContainer 'jnlp'
-      idleMinutes 10
     }
   }
 
