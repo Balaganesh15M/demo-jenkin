@@ -12,27 +12,19 @@ spec:
   containers:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.9.1
-      command:
-        - /kaniko/executor
+      command: ["/kaniko/executor"]
       args:
-        - --dockerfile=/workspace/source/Dockerfile
-        - --context=/workspace/source
-        - --destination=docker.io/\${IMAGE}
-        - --verbosity=debug
-        - --skip-tls-verify
+        - "--dockerfile=/workspace/source/Dockerfile"
+        - "--context=dir:///workspace/source"
+        - "--destination=docker.io/\${IMAGE}"
+        - "--verbosity=debug"
+        - "--skip-tls-verify"
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker/
         - name: workspace-volume
           mountPath: /workspace/source
       workingDir: /workspace/source
-      resources:
-        limits:
-          cpu: "1"
-          memory: "1Gi"
-        requests:
-          cpu: "500m"
-          memory: "512Mi"
     - name: jnlp
       image: jenkins/inbound-agent:latest
       volumeMounts:
@@ -67,11 +59,11 @@ spec:
       }
     }
 
-    stage('Build with Kaniko') {
+    stage('Build & Push with Kaniko') {
       steps {
         container('kaniko') {
-          echo "✅ Kaniko should be running the executor now..."
-          // Kaniko automatically builds and pushes due to command + args
+          echo "🚀 Kaniko building & pushing image..."
+          // No shell needed — kaniko executes automatically
         }
       }
     }
