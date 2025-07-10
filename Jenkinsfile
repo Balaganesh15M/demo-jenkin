@@ -69,10 +69,10 @@ spec:
             }
         }
 
-        stage('Verify Setup - List Workspace') {
+stage('Verify Setup - List Workspace') {
     steps {
         container('golang') {
-            sh "ls -la ${REPO_DIR}"
+            sh "/bin/sh -c 'ls -la'"
         }
     }
 }
@@ -80,10 +80,11 @@ spec:
 stage('Verify Setup - Check Build Script') {
     steps {
         container('golang') {
-            sh "test -f ${REPO_DIR}/build-go-bin.sh && echo 'Build script exists' || echo 'Missing script'"
+            sh "/bin/sh -c 'test -f build-go-bin.sh && echo Found || echo Missing'"
         }
     }
 }
+
 
 
         stage('Build') {
