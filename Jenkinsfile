@@ -69,35 +69,6 @@ spec:
             }
         }
 
-stage('Verify Setup - List Workspace') {
-    steps {
-        container('golang') {
-            sh "/bin/sh -c 'ls -la'"
-        }
-    }
-}
-
-stage('Verify Setup - Check Build Script') {
-    steps {
-        container('golang') {
-            sh "/bin/sh -c 'test -f build-go-bin.sh && echo Found || echo Missing'"
-        }
-    }
-}
-
-
-
-        stage('Build') {
-            steps {
-                container('golang') {
-                    sh """
-                    cd ${REPO_DIR}
-                    chmod +x build-go-bin.sh
-                    ./build-go-bin.sh
-                    """
-                }
-            }
-        }
 
         stage('Make Image') {
             environment {
