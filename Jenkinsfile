@@ -43,10 +43,10 @@ spec:
       }
     }
 
-    stage('Build with Kaniko') {
-      steps {
-        container('kaniko') {
-          stage('Build with Kaniko') {
+   
+
+
+      stage('Build with Kaniko') {
   container('kaniko') {
     sh '''
       echo '📂 Contents of /workspace:'
@@ -63,9 +63,5 @@ spec:
   }
 }
 
-
-        }
-      }
-    }
   }
 }
