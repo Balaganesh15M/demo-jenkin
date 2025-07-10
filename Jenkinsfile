@@ -63,7 +63,7 @@ spec:
       steps {
         git branch: 'main', 
         url: 'https://github.com/Balaganesh15M/demo-jenkin.git',
-        credentialsId: 'your-git-credentials'
+        credentialsId: 'github-creds'
       }
     }
 
