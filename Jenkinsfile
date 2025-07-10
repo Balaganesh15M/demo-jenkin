@@ -18,7 +18,7 @@ spec:
     workingDir: /home/jenkins/agent/workspace
     resources:
       requests:
-        cpu: "100m"
+        cpu: "200m"
         memory: "256Mi"
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
@@ -33,7 +33,7 @@ spec:
     workingDir: /home/jenkins/agent/workspace
     resources:
       requests:
-        cpu: "100m"
+        cpu: "500m"
         memory: "512Mi"
   volumes:
   - name: docker-config
@@ -55,7 +55,7 @@ spec:
             steps {
                 git branch: 'main',
                 url: 'https://github.com/Balaganesh15M/demo-jenkin.git',
-                
+               
             }
         }
         stage('Verify Setup') {
