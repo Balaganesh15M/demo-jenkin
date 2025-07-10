@@ -69,18 +69,22 @@ spec:
             }
         }
 
-        stage('Verify Setup') {
-            steps {
-                container('golang') {
-                    sh """
-                    echo "Workspace contents:"
-                    ls -la ${REPO_DIR}
-                    echo "Build script exists?"
-                    test -f ${REPO_DIR}/build-go-bin.sh && echo "Yes" || echo "No"
-                    """
-                }
-            }
+        stage('Verify Setup - List Workspace') {
+    steps {
+        container('golang') {
+            sh "ls -la ${REPO_DIR}"
         }
+    }
+}
+
+stage('Verify Setup - Check Build Script') {
+    steps {
+        container('golang') {
+            sh "test -f ${REPO_DIR}/build-go-bin.sh && echo 'Build script exists' || echo 'Missing script'"
+        }
+    }
+}
+
 
         stage('Build') {
             steps {
