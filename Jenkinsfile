@@ -9,7 +9,7 @@ metadata:
 spec:
   containers:
   - name: golang
-    image: golang:1.18  # Updated Go version
+    image: golang:1.18
     command: ["cat"]
     tty: true
     volumeMounts:
@@ -55,7 +55,7 @@ spec:
             steps {
                 git branch: 'main',
                 url: 'https://github.com/Balaganesh15M/demo-jenkin.git',
-               
+                credentialsId: 'your-actual-github-creds'
             }
         }
         stage('Verify Setup') {
@@ -78,7 +78,7 @@ spec:
                     script {
                         sh """
                         cd ${REPO_DIR}
-                        chmod +x build-go-bin.sh  # Ensure executable
+                        chmod +x build-go-bin.sh
                         ./build-go-bin.sh
                         """
                     }
