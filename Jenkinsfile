@@ -12,7 +12,7 @@ spec:
   containers:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:v1.9.1
-    command: ["/busybox/sh", "-c"]
+       command: ["/bin/sh", "-c"]
     args: ["echo '== START Kaniko ==';
             ls -l /workspace/source;
             echo '== Docker Config ==';
