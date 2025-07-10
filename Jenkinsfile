@@ -70,24 +70,19 @@ spec:
         }
 
 
-        stage('Make Image') {
-            environment {
-                REGISTRY = 'index.docker.io'
-                REPOSITORY = 'bala1511'
-                IMAGE = 'jenkins-demo'
-            }
-            steps {
-                container('kaniko') {
-                    sh """
-                    /kaniko/executor \
-                      --dockerfile=${REPO_DIR}/Dockerfile.run \
-                      --context=${REPO_DIR} \
-                      --destination=${REGISTRY}/${REPOSITORY}/${IMAGE}:latest \
-                      --cache=true \
-                      --verbosity=debug
-                    """
-                }
-            }
-        }
+      stage('Make Image') {
+  steps {
+    container('kaniko') {
+      sh '''
+        /kaniko/executor \
+          --context=dir:///home/jenkins/agent/workspace/gggggg \
+          --dockerfile=Dockerfile \
+          --destination=docker.io/bala1511/userapi:latest \
+          --verbosity=debug
+      '''
+    }
+  }
+}
+
     }
 }
