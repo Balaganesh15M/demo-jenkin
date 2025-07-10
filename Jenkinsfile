@@ -16,7 +16,7 @@ spec:
     args: [
       "--dockerfile=/workspace/source/Dockerfile",
       "--context=/workspace/source",
-      "--destination=docker.io/\${IMAGE}",
+      "--destination=docker.io/${env.IMAGE}",
       "--verbosity=debug",
       "--skip-tls-verify"
     ]
