@@ -10,34 +10,41 @@ spec:
   containers:
   - name: golang
     image: golang:1.12
-    command:
-    - cat
+    command: ["cat"]
     tty: true
+    volumeMounts:
+      - name: workspace-volume
+        mountPath: /workspace
+    workingDir: /workspace
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
     imagePullPolicy: Always
-    command:
-    - /busybox/cat
+    command: ["cat"]
     tty: true
     volumeMounts:
       - name: jenkins-docker-cfg
         mountPath: /kaniko/.docker
+      - name: workspace-volume
+        mountPath: /workspace
+    workingDir: /workspace
   volumes:
   - name: jenkins-docker-cfg
-    projected:
-      sources:
-      - secret:
-          name: dockerhub-secret
-          items:
-            - key: .dockerconfigjson
-              path: config.json
+    secret:
+      secretName: dockerhub-secret
+      items:
+        - key: .dockerconfigjson
+          path: config.json
+  - name: workspace-volume
+    emptyDir: {}
 """
         }
     }
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Balaganesh15M/demo-jenkin.git'
+                git branch: 'main',
+                url: 'https://github.com/Balaganesh15M/demo-jenkin.git',
+                credentialsId: 'github-creds'
             }
         }
         stage('Build') {
@@ -49,16 +56,22 @@ spec:
         }
         stage('Make Image') {
             environment {
-                PATH        = "/busybox:$PATH"
-                REGISTRY    = 'index.docker.io' // Configure your own registry
+                REGISTRY    = 'index.docker.io'
                 REPOSITORY  = 'bala1511'
                 IMAGE       = 'jenkins-demo'
             }
             steps {
-                container(name: 'kaniko', shell: '/busybox/sh') {
-                    sh '''#!/busybox/sh
-                    /kaniko/executor -f `pwd`/Dockerfile.run -c `pwd` --cache=true --destination=${REGISTRY}/${REPOSITORY}/${IMAGE}
-                    '''
+                container('kaniko') {
+                    script {
+                        sh """
+                        /kaniko/executor \
+                        --dockerfile=Dockerfile.run \
+                        --context=/workspace \
+                        --destination=${REGISTRY}/${REPOSITORY}/${IMAGE}:latest \
+                        --cache=true \
+                        --verbosity=debug
+                        """
+                    }
                 }
             }
         }
