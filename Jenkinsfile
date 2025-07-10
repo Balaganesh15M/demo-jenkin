@@ -32,7 +32,7 @@ spec:
           memory: "512Mi"
 
     - name: golang
-      image: golang:1.22
+      image: golang:1.22-alpine
       command: ["cat"]
       tty: true
       volumeMounts:
