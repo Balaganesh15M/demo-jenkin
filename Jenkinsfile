@@ -12,8 +12,8 @@ spec:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.9.1
       args:
-        - --dockerfile=/workspace/Dockerfile
-        - --context=dir:///workspace
+        - --dockerfile=Dockerfile
+        - --context=dir:https://github.com/Balaganesh15M/demo-jenkin.git
         - --destination=docker.io/bala1511/demo-jenkin:latest
         - --verbosity=debug
         - --skip-tls-verify
@@ -40,16 +40,6 @@ spec:
     }
   }
 
-  stages {
-    stage('Clone Repo') {
-      steps {
-        container('jnlp') {
-          dir('/workspace') {
-            git url: 'https://github.com/Balaganesh15M/demo-jenkin.git', branch: 'main'
-          }
-        }
-      }
-    }
     stage('Build & Push Image') {
       steps {
         // Nothing to do — Kaniko runs automatically using args
